@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">    
+<head>
+<title>Lab 1</title>
+<style>
+    svg {
+        width: 400px;
+        height: 400px;
+    }
+
+    #blue_bar_chart rect,
+    #red_bar_chart rect {
+        stroke: black;
+        stroke-width: 2;
+    }
+
+    #blue_bar_chart rect {
+        fill: blue;
+    }
+
+    #red_bar_chart rect {
+        fill: red;
+    }
+
+    #line_line_chart line,
+    #path_line_chart path {
+        stroke: black;
+        stroke-width: 3;
+        fill: none;
+    }   
+</style>
+</head>
+
+<body>
+    <h1>Lab1</h1>
+    <h2>Bar Charts</h2>
+        <svg id="blue_bar_chart" width="400" height="400">
+            <rect x="0" y="250" width="50" height="150"></rect>
+            <rect x="50" y="175" width="50" height="225"></rect>
+            <rect x="100" y="175" width="50" height="225"></rect>
+            <rect x="150" y="100" width="50" height="300"></rect>
+            <rect x="200" y="100" width="50" height="300"></rect>
+            <rect x="250" y="175" width="50" height="225"></rect>
+            <rect x="300" y="175" width="50" height="225"></rect>
+            <rect x="350" y="250" width="50" height="150"></rect>
+        </svg>
+        <svg id="red_bar_chart" width="400" height="400">
+            <rect x="0" y="250" width="50" height="150"></rect>
+            <rect x="50" y="175" width="50" height="225"></rect>
+            <rect x="100" y="175" width="50" height="225"></rect>
+            <rect x="150" y="100" width="50" height="300"></rect>
+            <rect x="200" y="100" width="50" height="300"></rect>
+            <rect x="250" y="175" width="50" height="225"></rect>
+            <rect x="300" y="175" width="50" height="225"></rect>
+            <rect x="350" y="250" width="50" height="150"></rect>
+        </svg>
+    <h2>Line Charts</h2>
+        <svg id="line_line_chart" width="400" height="400">
+            <line x1="25"  y1="250" x2="75"  y2="175"></line>
+            <line x1="75"  y1="175" x2="125" y2="175"></line>
+            <line x1="125" y1="175" x2="175" y2="100"></line>
+            <line x1="175" y1="100" x2="225" y2="100"></line>
+            <line x1="225" y1="100" x2="275" y2="175"></line>
+            <line x1="275" y1="175" x2="325" y2="175"></line>
+            <line x1="325" y1="175" x2="375" y2="250"></line>
+        </svg>
+        <svg id="path_line_chart" width="400" height="400">
+        <path d="
+            M 25 250
+            L 75 175
+            L 125 175
+            L 175 100
+            L 225 100
+            L 275 175
+            L 325 175
+            L 375 250"></path>
+    </svg>
+
+</body>
+</html>
