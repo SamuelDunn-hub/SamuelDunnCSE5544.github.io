@@ -1,80 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">    
+<html lang="en">
 <head>
-<title>Lab 1</title>
-<style>
-    svg {
-        width: 400px;
-        height: 400px;
-    }
+    <meta charset="utf-8" />
+    <title>Global Temperature Scatterplot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        h2 {
+            text-align: center;
+        }
+    </style>
 
-    #blue_bar_chart rect,
-    #red_bar_chart rect {
-        stroke: black;
-        stroke-width: 2;
-    }
-
-    #blue_bar_chart rect {
-        fill: blue;
-    }
-
-    #red_bar_chart rect {
-        fill: red;
-    }
-
-    #line_line_chart line,
-    #path_line_chart path {
-        stroke: black;
-        stroke-width: 3;
-        fill: none;
-    }   
-</style>
 </head>
 
 <body>
-    <h1>Lab1</h1>
-    <h2>Bar Charts</h2>
-        <svg id="blue_bar_chart" width="400" height="400">
-            <rect x="0" y="250" width="50" height="150"></rect>
-            <rect x="50" y="175" width="50" height="225"></rect>
-            <rect x="100" y="175" width="50" height="225"></rect>
-            <rect x="150" y="100" width="50" height="300"></rect>
-            <rect x="200" y="100" width="50" height="300"></rect>
-            <rect x="250" y="175" width="50" height="225"></rect>
-            <rect x="300" y="175" width="50" height="225"></rect>
-            <rect x="350" y="250" width="50" height="150"></rect>
-        </svg>
-        <svg id="red_bar_chart" width="400" height="400">
-            <rect x="0" y="250" width="50" height="150"></rect>
-            <rect x="50" y="175" width="50" height="225"></rect>
-            <rect x="100" y="175" width="50" height="225"></rect>
-            <rect x="150" y="100" width="50" height="300"></rect>
-            <rect x="200" y="100" width="50" height="300"></rect>
-            <rect x="250" y="175" width="50" height="225"></rect>
-            <rect x="300" y="175" width="50" height="225"></rect>
-            <rect x="350" y="250" width="50" height="150"></rect>
-        </svg>
-    <h2>Line Charts</h2>
-        <svg id="line_line_chart" width="400" height="400">
-            <line x1="25"  y1="250" x2="75"  y2="175"></line>
-            <line x1="75"  y1="175" x2="125" y2="175"></line>
-            <line x1="125" y1="175" x2="175" y2="100"></line>
-            <line x1="175" y1="100" x2="225" y2="100"></line>
-            <line x1="225" y1="100" x2="275" y2="175"></line>
-            <line x1="275" y1="175" x2="325" y2="175"></line>
-            <line x1="325" y1="175" x2="375" y2="250"></line>
-        </svg>
-        <svg id="path_line_chart" width="400" height="400">
-        <path d="
-            M 25 250
-            L 75 175
-            L 125 175
-            L 175 100
-            L 225 100
-            L 275 175
-            L 325 175
-            L 375 250"></path>
-    </svg>
+    <h1>Global Temperature (Land Avg Temp vs Time)</h1>
+    <h2> Chart1 (Visualization with Background Image) </h2>
+    <div id="chart1" width="900" height="500"></div>
+
+
+    <script>
+        async function drawScatter(chart) {
+        const data = await d3.json("GlobalTemperatures.json");
+        console.log(data);  
+
+        const width = 900;
+        const height = 500;
+
+        const margin = { top: 30, right: 30, bottom: 60, left: 70 };
+        const innerW = width - margin.left - margin.right;
+        const innerH = height - margin.top - margin.bottom;
+
+        const svg = d3.select(chart)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+        const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        svg.insert("image", ":first-child")
+        .attr("href", "climate.jpg")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", width)
+        .attr("height", height)
+        .attr("opacity", 0.60);
+
+        
+
+        const clean = data.map(d => {
+        const s = String(d.time);
+            return {
+                date: new Date(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8)),
+                temp: +d.LAT,
+                unc: +d.LATU
+            };
+        });
+       
+        console.log(clean);
+
+        const x = d3.scaleTime()
+        .domain(d3.extent(clean, d => d.date))
+        .range([0, innerW]);
+
+        const y = d3.scaleLinear()
+        .domain(d3.extent(clean, d => d.temp))
+        .nice()
+        .range([innerH, 0]);
+
+        g.append("g")
+        .attr("transform", `translate(0,${innerH})`)
+        .call(d3.axisBottom(x));
+
+        g.append("g")
+        .call(d3.axisLeft(y));
+
+        const r = d3.scaleSqrt()
+        .domain(d3.extent(clean, d => d.unc))
+        .range([2, 8]);
+
+    
+
+        g.selectAll("circle")
+        .data(clean)
+        .enter()
+        .append("circle")
+        .attr("cx", d => x(d.date))
+        .attr("cy", d => y(d.temp))
+        .attr("r", d => r(d.unc))
+        .attr("fill", d => "black")
+        .attr("opacity", 0.8);
+
+        g.append("text")
+        .attr("x", innerW / 2)
+        .attr("y", innerH + 45)
+        .attr("text-anchor", "middle")
+        .text("Time");
+
+        g.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -innerH / 2)
+        .attr("y", -50)
+        .attr("text-anchor", "middle")
+        .text("Land Average Temperature (C)");
+
+
+
+    }
+    drawScatter("#chart1"); 
+    
+
+    </script>
+
+    <h2> Discussion </h2>
+    <p>
+        The scatterplot above visualize the relationship between time and global land average temperature. 
+        We see a basic scatterplot that shows how temperatures have changed over time. I also added a background image to provide context, enhancing the visual appeal and emphasizing the theme of climate change. 
+        Overall, these visualizations choices highlight the increasing trend in global temperatures over the years, emphasizing the urgency of addressing climate change. As you can also so the size of the circles
+        represent the uncertainty in the temperature measurements
+        which adds an additional layer of information to the scatterplot. As time increases measurements become more certain.
 
 </body>
+
+
 </html>
