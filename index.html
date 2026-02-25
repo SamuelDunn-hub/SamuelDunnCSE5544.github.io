@@ -1,130 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">    
 <head>
-    <meta charset="utf-8" />
-    <title>Global Temperature Scatterplot</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        h2 {
-            text-align: center;
-        }
-        #chart1 {
-            width: 900px;
-            height: 500px;
-        }
-    </style>
-
+<title>Lab 3</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+   
+    
+</style>
 </head>
 
 <body>
-    <h1>Global Temperature (Land Avg Temp vs Time)</h1>
-    <h2> Chart1 (Visualization with Background Image) </h2>
-    <div id="chart1"></div>
+    <h2>Global Land Average Temperature</h2>
+    <div class="controls">
+    <button id="colormap-button-1">Colormap 1 </button>
+    <button id="colormap-button-2">Colormap 2 </button>
+    <button id="colormap-button-3">Colormap 3 </button>
+  </div>
+    
+    <div id ="chart1"></div>
+    <div id ="chart2"></div>
+    <div id ="chart3"></div>
+
+
 
 
     <script>
-        async function drawScatter(chart) {
-        const data = await d3.json("https://raw.githubusercontent.com/SamuelDunn-hub/SamuelDunnCSE5544.github.io/master/GlobalTemperatures.json");
-        console.log(data);  
+        async function draw() {
+            const width = 900;
+            const height = 500;
+            const margin = { top: 30, right: 30, bottom: 60, left: 70 };
+            const innerW = width - margin.left - margin.right;
+            const innerH = height - margin.top - margin.bottom;
 
-        const width = 900;
-        const height = 500;
+            const data = await d3.json("https://raw.githubusercontent.com/SamuelDunn-hub/SamuelDunnCSE5544.github.io/master/GlobalTemperatures.json");
+            console.log(data);
 
-        const margin = { top: 30, right: 30, bottom: 60, left: 70 };
-        const innerW = width - margin.left - margin.right;
-        const innerH = height - margin.top - margin.bottom;
+            const svg = d3.select("#chart1")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            
 
-        const svg = d3.select(chart)
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-        const g = svg.append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-        svg.insert("image", ":first-child")
-        .attr("href", "climate.jpg")
-        .attr("x", 0)
-        .attr("y", 0)
-        .attr("width", width)
-        .attr("height", height)
-        .attr("opacity", 0.60);
+            const g = svg.append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
         
-
-        const clean = data.map(d => {
-        const s = String(d.time);
+            const clean = data.map(d => {
+            const s = String(d.time);
             return {
                 date: new Date(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8)),
                 temp: +d.LAT,
                 unc: +d.LATU
             };
-        });
-       
-        console.log(clean);
+            });
 
-        const x = d3.scaleTime()
-        .domain(d3.extent(clean, d => d.date))
-        .range([0, innerW]);
-
-        const y = d3.scaleLinear()
-        .domain(d3.extent(clean, d => d.temp))
-        .nice()
-        .range([innerH, 0]);
-
-        g.append("g")
-        .attr("transform", `translate(0,${innerH})`)
-        .call(d3.axisBottom(x));
-
-        g.append("g")
-        .call(d3.axisLeft(y));
-
-        const r = d3.scaleSqrt()
-        .domain(d3.extent(clean, d => d.unc))
-        .range([2, 8]);
-
-    
-
-        g.selectAll("circle")
-        .data(clean)
-        .enter()
-        .append("circle")
-        .attr("cx", d => x(d.date))
-        .attr("cy", d => y(d.temp))
-        .attr("r", d => r(d.unc))
-        .attr("fill", d => "black")
-        .attr("opacity", 0.8);
-
-        g.append("text")
-        .attr("x", innerW / 2)
-        .attr("y", innerH + 45)
-        .attr("text-anchor", "middle")
-        .text("Time");
-
-        g.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -innerH / 2)
-        .attr("y", -50)
-        .attr("text-anchor", "middle")
-        .text("Land Average Temperature (C)");
+            // Chart 1
+            const min = d3.min(clean, d => d.unc);
+            const max = d3.max(clean, d => d.unc);
+            const mean =d3.mean(clean, d=> d.unc);
+            const scale2=false;
+            const scale1=false;
+            const scale3=true;
 
 
+            colorScale1 = d3.scaleLinear()
+            .domain([min, max])   
+            .range(["red", "green"]);
 
-    }
-    drawScatter("#chart1"); 
-    
+            colorScale2 = d3.scaleLinear()
+            .domain([min,mean, max])
+            .range(["#d7191c", "#ffffbf", "#1a9641"]);
+
+            colorScale3 = d3.scaleQuantize()
+            .domain([min, max])
+            .range(["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]);
+            
+            
+
+            const x = d3.scaleTime()
+            .domain(d3.extent(clean, d => d.date))
+            .range([0, innerW]);
+
+            const y = d3.scaleLinear()
+            .domain(d3.extent(clean, d => d.temp))
+            .range([innerH, 0]);
+
+            const r = d3.scaleLinear()
+            .domain([min, max])
+            .range([2, 8]); 
+
+            g.append("g")
+            .attr("transform", `translate(0,${innerH})`)
+            .call(d3.axisBottom(x));
+
+            g.append("g")
+            .call(d3.axisLeft(y));
+
+            g.append("text")
+            .attr("x", innerW / 2)
+            .attr("y", innerH + 45)
+            .attr("text-anchor", "middle")
+            .style("font-size", "14px")
+            .text("Year");
+
+            // Y Axis Label
+            g.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -innerH / 2)
+            .attr("y", -50)
+            .attr("text-anchor", "middle")
+            .style("font-size", "14px")
+            .text("Land Average Temperature");
+
+
+
+            g.selectAll("circle")
+            .data(clean)
+            .enter()
+            .append("circle")
+            .attr("cx", d => x(d.date))
+            .attr("cy", d => y(d.temp))
+            .attr("r", d => r(d.unc))
+            .attr("fill", d => colorScale1(d.unc))
+            .attr("opacity", 0.8);
+
+            function applyColormap(scale) {
+            g.selectAll("circle")
+            .transition()
+            .attr("fill", d => scale(d.unc));
+            }
+
+            d3.select("#colormap-button-1").on("click", () => applyColormap(colorScale1));
+            d3.select("#colormap-button-2").on("click", () => applyColormap(colorScale2));
+            d3.select("#colormap-button-3").on("click", () => applyColormap(colorScale3));
+
+        }
+        draw();
 
     </script>
-
-    <h2> Discussion </h2>
-    <p>
-        The scatterplot above visualize the relationship between time and global land average temperature. 
-        We see a basic scatterplot that shows how temperatures have changed over time. I also added a background image to provide context, enhancing the visual appeal and emphasizing the theme of climate change. 
-        Overall, these visualizations choices highlight the increasing trend in global temperatures over the years, emphasizing the urgency of addressing climate change. As you can also so the size of the circles
-        represent the uncertainty in the temperature measurements
-        which adds an additional layer of information to the scatterplot. As time increases measurements become more certain.
-
 </body>
-
-
 </html>
+
+
